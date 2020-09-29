@@ -2,9 +2,7 @@ This project is inspired by and based on https://github.com/vannizhang/covid19-t
 
 # ToDo
 
-- json of point locations
-- data for each location
-- utils to get data for each location
+- ~~ json of point locations and data ~~
 - generate CIMSymbol based on data for each location
 - add all CIMSymbols to map (by chunk, create graphics then layer.addMany)
 - api to get data
