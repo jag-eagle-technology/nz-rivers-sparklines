@@ -4,8 +4,6 @@ import ICIMSymbol from 'esri/symbols/CIMSymbol';
 import IGraphic from 'esri/Graphic';
 import IPoint from 'esri/geometry/Point';
 import IGraphicsLayer from 'esri/layers/GraphicsLayer';
-import ILayer from 'esri/layers/Layer';
-import IPortalItem from 'esri/portal/PortalItem';
 import ISpatialReference from 'esri/geometry/SpatialReference';
 import { loadModules } from 'esri-loader';
 
@@ -19,15 +17,11 @@ export interface ISparkLineData extends Array<ISparkLinePoint> {}
 
 interface ISparkLineLayer {
     data: ISparkLineData;
-    layerId: string;
     mapView?: IMapView;
+    color: number[];
 }
 
-const SparkLineLayer: React.FC<ISparkLineLayer> = ({
-    mapView,
-    layerId,
-    data,
-}) => {
+const SparkLineLayer: React.FC<ISparkLineLayer> = ({ mapView, data, color }) => {
     const [trendLayer, setTrendLayer] = React.useState<IGraphicsLayer>();
     const initLayer = async () => {
         type Modules = [typeof IGraphicsLayer, typeof ISpatialReference];
@@ -77,15 +71,23 @@ const SparkLineLayer: React.FC<ISparkLineLayer> = ({
                 'esri/geometry/Point',
                 'esri/geometry/SpatialReference',
             ]) as Promise<Modules>);
+            console.dir(data);
             const sparkLineGraphics = data.map((sparkLinePoint) => {
-                const ymax = sparkLinePoint.data.map(i => i[1]).reduce((prev, curr) => Math.max(prev, curr), Number.NEGATIVE_INFINITY);
-                const xmax = ymax
+                const ymax = sparkLinePoint.data
+                    .map((i) => i[1])
+                    .reduce(
+                        (prev, curr) => Math.max(prev, curr),
+                        Number.NEGATIVE_INFINITY
+                    );
+                const xmax = ymax;
                 const ratio = xmax / (sparkLinePoint.data.length - 1);
-                const path = sparkLinePoint.data.map(i => i[1]).map((num, index) => {
-                    const x = index * ratio
-                    const y = num;
-                    return [ x, y]
-                })
+                const path = sparkLinePoint.data
+                    .map((i) => i[1])
+                    .map((num, index) => {
+                        const x = index * ratio;
+                        const y = num;
+                        return [x, y];
+                    });
                 const geometry = new Point({
                     x: sparkLinePoint.coordinates.x,
                     y: sparkLinePoint.coordinates.y,
@@ -121,12 +123,7 @@ const SparkLineLayer: React.FC<ISparkLineLayer> = ({
                                                     {
                                                         type: 'CIMSolidStroke',
                                                         width: 2,
-                                                        color: [
-                                                            45,
-                                                            143,
-                                                            255,
-                                                            255,
-                                                        ],
+                                                        color
                                                     },
                                                 ],
                                             },
@@ -137,14 +134,9 @@ const SparkLineLayer: React.FC<ISparkLineLayer> = ({
                         },
                     },
                 });
-                const graphic =  new Graphic({ geometry, symbol });
-                return graphic;
-                // return new Graphic({ geometry });
-                // mapView.graphics.add(new Graphic({ geometry }));
-                // trendLayer.add(new Graphic({ geometry }));
+                return new Graphic({ geometry, symbol });
             });
             if (sparkLineGraphics.length > 0) {
-                console.log('about to add graphics');   
                 trendLayer.visible = true;
                 trendLayer.addMany(sparkLineGraphics);
             } else {
