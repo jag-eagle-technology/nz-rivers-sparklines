@@ -77,7 +77,6 @@ const SparkLineLayer: React.FC<ISparkLineLayer> = ({
                 'esri/geometry/Point',
                 'esri/geometry/SpatialReference',
             ]) as Promise<Modules>);
-            console.log(data);
             const sparkLineGraphics = data.map((sparkLinePoint) => {
                 const ymax = sparkLinePoint.data.map(i => i[1]).reduce((prev, curr) => Math.max(prev, curr), Number.NEGATIVE_INFINITY);
                 const xmax = ymax
@@ -138,7 +137,8 @@ const SparkLineLayer: React.FC<ISparkLineLayer> = ({
                         },
                     },
                 });
-                return new Graphic({ geometry, symbol });
+                const graphic =  new Graphic({ geometry, symbol });
+                return graphic;
                 // return new Graphic({ geometry });
                 // mapView.graphics.add(new Graphic({ geometry }));
                 // trendLayer.add(new Graphic({ geometry }));

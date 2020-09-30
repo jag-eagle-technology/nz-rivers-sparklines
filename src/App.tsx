@@ -15,7 +15,11 @@ function App() {
         const GWRCHillTopFlowSites = await getHillTopSitesWithMeasurementType('Flow');
         // const GWRCHillTopFlowSites = GWRCHillTopSites;
         const hillTopMeasurements = await getHilltopDataForSites(GWRCHillTopFlowSites);
-        setSparkLineData(hillTopMeasurements);
+        // console.log(hillTopMeasurements.slice(1));
+        console.log(hillTopMeasurements[0]);
+        console.log(hillTopMeasurements[1]);
+        setSparkLineData(hillTopMeasurements.filter(measurement => measurement.data.length > 0));
+        // setSparkLineData(hillTopMeasurements);
     };
     useEffect(() => {
         // getPointValues(492).then(results => console.log(results));
