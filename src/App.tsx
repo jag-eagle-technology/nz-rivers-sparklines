@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import MapView from './components/MapView';
 import SparkLineLayer, { ISparkLineData } from './components/SparkLineLayer';
 // import { getPointValues } from './api/WCRCHydWebServerAPI';
-import { getHilltopDataForSites } from './api/GWRCHillTopAPI';
+import { getHilltopDataForSites, getHillTopSitesWithMeasurementType } from './api/GWRCHillTopAPI';
 import './App.css';
 // import SPARKLINE_TEST_LAYER from './api/testPoints.json';
 import GWRCHillTopSites from './api/GWRCHillTopSites.json';
@@ -12,8 +12,9 @@ function App() {
         []
     );
     const loadSparkLineData = async () => {
-        const hillTopMeasurements = await getHilltopDataForSites(GWRCHillTopSites);
-        console.log(hillTopMeasurements);
+        const GWRCHillTopFlowSites = await getHillTopSitesWithMeasurementType('Flow');
+        // const GWRCHillTopFlowSites = GWRCHillTopSites;
+        const hillTopMeasurements = await getHilltopDataForSites(GWRCHillTopFlowSites);
         setSparkLineData(hillTopMeasurements);
     };
     useEffect(() => {

@@ -3,8 +3,7 @@
 
         "coordinates": { "x": 1775575, "y": 5448016 },
         "properties": {
-            "service": "Hilltop",
-            "site": "Hutt%20River%20at%20Birchville",
+            "site": "Hutt River at Birchville",
             "measurement": "Flow"
         },
         "data": []
