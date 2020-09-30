@@ -7,6 +7,11 @@ function App() {
         <div className="App">
             <MapView webmapId="dccd38078e4a451c935ab3e1f2a6e4d4">
                 <HilltopSparkLineLayer
+                    hilltopURL="https://hilltopserver.horizons.govt.nz/data.hts"
+                    measurement="Flow"
+                    color={[45, 143, 255, 255]}
+                />
+                <HilltopSparkLineLayer
                     hilltopURL="http://hilltop.gw.govt.nz/Data.hts"
                     measurement="Flow"
                     color={[45, 143, 255, 255]}
@@ -18,11 +23,7 @@ function App() {
 
 export default App;
 /*
-                <HilltopSparkLineLayer
-                    hilltopURL="https://hilltopserver.horizons.govt.nz/data.hts"
-                    measurement="Flow"
-                    color={[45, 143, 255, 255]}
-                />
+
                 <HilltopSparkLineLayer
                     hilltopURL="https://data.hbrc.govt.nz/Envirodata/EMAR.hts"
                     measurement="Flow"

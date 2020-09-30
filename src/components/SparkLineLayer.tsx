@@ -147,7 +147,6 @@ const SparkLineLayer: React.FC<ISparkLineLayer> = ({ mapView, data, color }) => 
         }
     };
     useEffect(() => {
-        console.log('initialising layer');
         initLayer();
     }, [mapView]);
     useEffect(() => {

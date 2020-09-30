@@ -23,8 +23,7 @@ IgetHillTopMeasurements) => {
     // From=23/09/2020%2000:00:00
     // To=30/09/2020%2023:59:59
     const siteMeasurementsXML = await fetch(
-        `${hilltopURL}?Service=Hilltop&Request=GetData&Site=${site}&Measurement=${measurement}&TimeInterval=P7D/now`,
-        { mode: 'no-cors' }
+        `${hilltopURL}?Service=Hilltop&Request=GetData&Site=${site}&Measurement=${measurement}&TimeInterval=P7D/now`
     ).then((response) => response.text());
     const xmlParser = await new xml2js.Parser({ explicitArray: false });
     const siteMeasurements = await xmlParser.parseStringPromise(
@@ -32,9 +31,11 @@ IgetHillTopMeasurements) => {
     );
     if (
         !siteMeasurements ||
-        !siteMeasurements.HilltopServer ||
-        siteMeasurements.HilltopServer.Error
+        !siteMeasurements.Hilltop ||
+        (siteMeasurements.HilltopServer && siteMeasurements.HilltopServer.Error)
     ) {
+        console.log('bad: ');
+        console.log(siteMeasurements);
         return;
     }
     // implement error catching here
@@ -70,16 +71,17 @@ export const getHillTopSites = async ({
     measurement: string;
 }): Promise<ISparkLineData> => {
     const sitesXML = await fetch(
-        `${hilltopURL}?Service=Hilltop&Request=SiteList&Location=Yes&Measurement=${measurement}`,
-        { mode: 'no-cors' }
+        `${hilltopURL}?Service=Hilltop&Request=SiteList&Location=Yes&Measurement=${measurement}`
     ).then((response) => response.text());
     const xmlParser = await new xml2js.Parser({ explicitArray: false });
     const siteMeasurements = await xmlParser.parseStringPromise(sitesXML);
     if (
         !siteMeasurements ||
         !siteMeasurements.HilltopServer ||
-        siteMeasurements.HilltopServer.Error
+        !!siteMeasurements.HilltopServer.Error
     ) {
+        console.log('bad: ');
+        console.log(siteMeasurements);
         return [];
     }
     // implement error catching here

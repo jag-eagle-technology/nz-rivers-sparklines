@@ -24,6 +24,8 @@ const HilltopSparkLineLayer = ({
             hilltopURL,
             measurement,
         });
+        console.log('data returned is');
+        console.log(hillTopMeasurements);
         setSparkLineData(
             hillTopMeasurements.filter(
                 (measurement) => measurement.data.length > 0
