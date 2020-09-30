@@ -11,12 +11,14 @@
     "@types/node": "^12.12.62",
     "@types/react": "^16.9.49",
     "@types/react-dom": "^16.9.8",
+    "@types/xml2js": "^0.4.5",
     "arcgis-js-api": "^4.16.2",
     "esri-loader": "^2.15.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.3",
-    "typescript": "^3.7.5"
+    "typescript": "^3.7.5",
+    "xml2js": "^0.4.23"
   },
   "scripts": {
     "start": "react-scripts start",
