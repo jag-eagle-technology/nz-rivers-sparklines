@@ -8,7 +8,7 @@ import ISpatialReference from 'esri/geometry/SpatialReference';
 import { loadModules } from 'esri-loader';
 
 export interface ISparkLinePoint {
-    coordinates: { x: number; y: number };
+    coordinates: { x: number; y: number, wkid: number };
     properties: any;
     data: [string, number][];
 }
@@ -36,9 +36,9 @@ const SparkLineLayer: React.FC<ISparkLineLayer> = ({ mapView, data, color }) => 
 
             const layer = new GraphicsLayer({
                 visible: false,
-                fullExtent: {
-                    spatialReference: new SpatialReference({ wkid: 2193 }),
-                },
+                // fullExtent: {
+                //     spatialReference: new SpatialReference({ wkid: 2193 }),
+                // },
             });
             mapView.map.add(layer);
             setTrendLayer(layer);
@@ -91,7 +91,7 @@ const SparkLineLayer: React.FC<ISparkLineLayer> = ({ mapView, data, color }) => 
                 const geometry = new Point({
                     x: sparkLinePoint.coordinates.x,
                     y: sparkLinePoint.coordinates.y,
-                    spatialReference: new SpatialReference({ wkid: 2193 }),
+                    spatialReference: new SpatialReference({ wkid: sparkLinePoint.coordinates.wkid }),
                 });
                 const symbol = new CIMSymbol({
                     data: {
@@ -122,7 +122,7 @@ const SparkLineLayer: React.FC<ISparkLineLayer> = ({ mapView, data, color }) => 
                                                 symbolLayers: [
                                                     {
                                                         type: 'CIMSolidStroke',
-                                                        width: 2,
+                                                        width: 1.5,
                                                         color
                                                     },
                                                 ],
@@ -148,12 +148,14 @@ const SparkLineLayer: React.FC<ISparkLineLayer> = ({ mapView, data, color }) => 
     };
     useEffect(() => {
         initLayer();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mapView]);
     useEffect(() => {
         if (trendLayer) {
             trendLayer.removeAll();
             drawLayer();
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [trendLayer, data]);
     return null;
 };

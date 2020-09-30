@@ -7,6 +7,7 @@ interface IHilltopSparkLineLayer {
     mapView?: IMapView;
     hilltopURL: string;
     measurement: string;
+    wkid?: number;
     color: number[];
 }
 
@@ -14,18 +15,23 @@ const HilltopSparkLineLayer = ({
     mapView,
     hilltopURL,
     measurement,
-    color
+    wkid = 2193,
+    color,
 }: IHilltopSparkLineLayer) => {
     const [sparkLineData, setSparkLineData] = React.useState<ISparkLineData>(
         []
     );
     const loadSparkLineData = async () => {
-        const hillTopMeasurements = await getHillTopSitesWithData({
+        var hillTopMeasurements = await getHillTopSitesWithData({
             hilltopURL,
             measurement,
         });
         console.log('data returned is');
         console.log(hillTopMeasurements);
+        hillTopMeasurements = hillTopMeasurements.map((measurement) => ({
+            ...measurement,
+            coordinates: { ...measurement.coordinates, wkid },
+        }));
         setSparkLineData(
             hillTopMeasurements.filter(
                 (measurement) => measurement.data.length > 0
@@ -34,13 +40,10 @@ const HilltopSparkLineLayer = ({
     };
     useEffect(() => {
         loadSparkLineData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     return (
-        <SparkLineLayer
-            mapView={mapView}
-            data={sparkLineData}
-            color={color}
-        />
+        <SparkLineLayer mapView={mapView} data={sparkLineData} color={color} />
     );
 };
 

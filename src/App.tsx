@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import MapView from './components/MapView';
 import HilltopSparkLineLayer from './components/HilltopSparkLineLayer';
 import './App.css';
@@ -10,6 +10,7 @@ function App() {
                     hilltopURL="https://hilltopserver.horizons.govt.nz/data.hts"
                     measurement="Flow"
                     color={[45, 143, 255, 255]}
+                    wkid={27200}
                 />
                 <HilltopSparkLineLayer
                     hilltopURL="http://hilltop.gw.govt.nz/Data.hts"

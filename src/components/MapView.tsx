@@ -4,7 +4,7 @@ import React from 'react';
 import { loadModules, loadCss } from 'esri-loader'; // needed due to dojo amd module system
 import IMapView from 'esri/views/MapView';
 import IWebMap from 'esri/WebMap';
-import IwatchUtils from 'esri/core/watchUtils'; // for watching accessors (instance properties/mechanism for watching property changes)
+// import IwatchUtils from 'esri/core/watchUtils'; // for watching accessors (instance properties/mechanism for watching property changes)
 
 export type MapCenterLocation = {
     lat: number;
@@ -53,6 +53,7 @@ const MapView: React.FC<Props> = ({ webmapId, children }: Props) => {
     React.useEffect(() => {
         loadCss();
         initMapView();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (
