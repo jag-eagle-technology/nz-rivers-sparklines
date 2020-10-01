@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import IMapView from 'esri/views/MapView';
 import SparkLineLayer, { ISparkLineData } from './SparkLineLayer';
-import { getHillTopSitesWithData } from '../api/HillTopAPI';
+import { getHillTopSitesWithData, getHilltopDataForSitesWithDatatable } from '../api/HillTopAPI';
 
 interface IHilltopSparkLineLayer {
     mapView?: IMapView;
@@ -9,6 +9,7 @@ interface IHilltopSparkLineLayer {
     measurement: string;
     wkid?: number;
     color: number[];
+    setPopupTitle?: React.Dispatch<React.SetStateAction<string | undefined>>;
 }
 
 const HilltopSparkLineLayer = ({
@@ -17,6 +18,7 @@ const HilltopSparkLineLayer = ({
     measurement,
     wkid = 2193,
     color,
+    setPopupTitle
 }: IHilltopSparkLineLayer) => {
     const [sparkLineData, setSparkLineData] = React.useState<ISparkLineData>(
         []
@@ -26,8 +28,6 @@ const HilltopSparkLineLayer = ({
             hilltopURL,
             measurement,
         });
-        console.log('data returned is');
-        console.log(hillTopMeasurements);
         hillTopMeasurements = hillTopMeasurements.map((measurement) => ({
             ...measurement,
             coordinates: { ...measurement.coordinates, wkid },
@@ -43,7 +43,7 @@ const HilltopSparkLineLayer = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     return (
-        <SparkLineLayer mapView={mapView} data={sparkLineData} color={color} />
+        <SparkLineLayer mapView={mapView} data={sparkLineData} color={color} id={`${hilltopURL} - ${measurement}`} setPopupTitle={setPopupTitle} />
     );
 };
 

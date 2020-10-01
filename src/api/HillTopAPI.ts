@@ -1,3 +1,4 @@
+import { Schema } from 'inspector';
 import xml2js from 'xml2js';
 import { ISparkLineData } from '../components/SparkLineLayer';
 // http://hilltop.gw.govt.nz/Data.hts?Service=Hilltop&Request=GetData&Site=Floodway%20at%20Oporua&Measurement=Stage&From=23/09/2020%2000:00:00&To=30/09/2020%2023:59:59&interval=undefined
@@ -34,8 +35,8 @@ IgetHillTopMeasurements) => {
         !siteMeasurements.Hilltop ||
         (siteMeasurements.HilltopServer && siteMeasurements.HilltopServer.Error)
     ) {
-        console.log('bad: ');
-        console.log(siteMeasurements);
+        // console.log('bad: ');
+        // console.log(siteMeasurements);
         return;
     }
     // implement error catching here
@@ -80,8 +81,8 @@ export const getHillTopSites = async ({
         !siteMeasurements.HilltopServer ||
         !!siteMeasurements.HilltopServer.Error
     ) {
-        console.log('bad: ');
-        console.log(siteMeasurements);
+        // console.log('bad: ');
+        // console.log(siteMeasurements);
         return [];
     }
     // implement error catching here
@@ -110,4 +111,75 @@ export const getHillTopSitesWithData = async ({
         sites,
     });
     return hillTopMeasurements;
+};
+
+// DataTable based api
+// http://hilltop.gw.govt.nz/Data.hts?Service=Hilltop&Request=DataTable&Site=Mangatarere River at State Highway 2,Mangatarere at Belvedere Bridge&Measurement=Flow&From=24/09/2020&To=01/10/2020&SiteParameters=Location
+interface datatableResults {
+    HilltopServer: {
+        Measurements: {
+            ColumnName: string;
+            Mesurement: string;
+            Units: string;
+        };
+        Results: { M1: string; SiteName: string; Time: string }[];
+        $: any;
+        'xsd:schema': any;
+    };
+}
+export const getHilltopDataForSitesWithDatatable = async ({
+    hilltopURL,
+    measurement,
+}: {
+    hilltopURL: string;
+    measurement: string;
+}) => {
+    const sites = await getHillTopSites({ hilltopURL, measurement });
+    const chunk = (array: any[], size: number): any[] => {
+        if (array.length <= size) {
+            return [array]
+        }
+        return [array.slice(0, size), ...chunk(array.slice(size), size)]
+    }
+    const mapSiteNamesToObjectPropreties = (acc: any, result: any) => {
+        return {
+            ...acc,
+            [result.SiteName]: [...(acc[result.SiteName] || []), [result.Time, result.M1]],
+        };
+    }
+    /*
+    const resultPromises = siteChunks(sites, 10).map(async sites => {
+        const sitesString = sites.reduce((prev: string, cur:any) => prev + `"${cur.properties.site}",`, '');
+        const urlToFetch = `${hilltopURL}?Service=Hilltop&Request=DataTable&Measurement=${measurement}&TimeInterval=P7D/now&From=24/09/2020&To=01/10/2020&Site=${sitesString}`;
+        const siteMeasurementsXML = await fetch(
+            urlToFetch
+        ).then((response) => response.text());
+        const xmlParser = await new xml2js.Parser({ explicitArray: false });
+        const siteMeasurements: datatableResults = await xmlParser.parseStringPromise(
+            siteMeasurementsXML
+        );
+    });
+    */
+   const siteChunks = chunk(sites, 10);
+    const resultPromises = await siteChunks.reduce(async (acc, sites) => {
+        const sitesString = sites.reduce((prev: string, cur:any) => prev + `"${cur.properties.site}",`, '');
+        const urlToFetch = `${hilltopURL}?Service=Hilltop&Request=DataTable&Measurement=${measurement}&TimeInterval=P7D/now&From=24/09/2020&To=01/10/2020&Site=${sitesString}`;
+        const siteMeasurementsXML = await fetch(
+            urlToFetch
+        ).then((response) => response.text());
+        const xmlParser = await new xml2js.Parser({ explicitArray: false });
+        const siteMeasurements: datatableResults = await xmlParser.parseStringPromise(
+            siteMeasurementsXML
+        );
+        // console.log(siteMeasurements);
+        const chunkSiteObjects = siteMeasurements.HilltopServer.Results.reduce(mapSiteNamesToObjectPropreties, <{ [key: string]: any[] }>{});
+        // console.log(chunkSiteObjects);
+        if (!siteMeasurements.HilltopServer.Results) {
+            // console.log(siteMeasurements);
+            // console.log(urlToFetch);
+            return {...acc};
+        }
+        return {...acc, ...chunkSiteObjects};
+    }, {});
+    console.log(resultPromises);
 };

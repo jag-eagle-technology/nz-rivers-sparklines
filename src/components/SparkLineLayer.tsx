@@ -19,9 +19,11 @@ interface ISparkLineLayer {
     data: ISparkLineData;
     mapView?: IMapView;
     color: number[];
+    id: string;
+    setPopupTitle?: React.Dispatch<React.SetStateAction<string | undefined>>;
 }
 
-const SparkLineLayer: React.FC<ISparkLineLayer> = ({ mapView, data, color }) => {
+const SparkLineLayer: React.FC<ISparkLineLayer> = ({ mapView, data, color, id, setPopupTitle }) => {
     const [trendLayer, setTrendLayer] = React.useState<IGraphicsLayer>();
     const initLayer = async () => {
         type Modules = [typeof IGraphicsLayer, typeof ISpatialReference];
@@ -29,19 +31,20 @@ const SparkLineLayer: React.FC<ISparkLineLayer> = ({ mapView, data, color }) => 
             if (!mapView) {
                 throw new Error('no map set');
             }
-            const [GraphicsLayer, SpatialReference] = await (loadModules([
+            const [GraphicsLayer] = await (loadModules([
                 'esri/layers/GraphicsLayer',
                 'esri/geometry/SpatialReference',
             ]) as Promise<Modules>);
 
             const layer = new GraphicsLayer({
                 visible: false,
-                // fullExtent: {
-                //     spatialReference: new SpatialReference({ wkid: 2193 }),
-                // },
+                id
             });
             mapView.map.add(layer);
             setTrendLayer(layer);
+            if (setPopupTitle) {
+                mapView.on('pointer-move', (evt) => mapView.hitTest(evt, {include: layer}).then(value => value.results[0] && setPopupTitle(value.results[0].graphic.attributes.site)));
+            }
         } catch (err) {
             console.log(err);
         }
@@ -134,7 +137,7 @@ const SparkLineLayer: React.FC<ISparkLineLayer> = ({ mapView, data, color }) => 
                         },
                     },
                 });
-                return new Graphic({ geometry, symbol });
+                return new Graphic({ geometry, symbol, attributes: {...sparkLinePoint.properties}});
             });
             if (sparkLineGraphics.length > 0) {
                 trendLayer.visible = true;

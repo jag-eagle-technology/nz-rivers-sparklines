@@ -1,18 +1,23 @@
 import React from 'react';
 import MapView from './components/MapView';
 import HilltopSparkLineLayer from './components/HilltopSparkLineLayer';
+import MapToolTip from './components/MapToolTip';
 import './App.css';
 function App() {
+    const [popupTitle, setPopupTitle] = React.useState<string>();
     return (
         <div className="App">
             <MapView webmapId="dccd38078e4a451c935ab3e1f2a6e4d4">
+                <MapToolTip title={popupTitle} />
                 <HilltopSparkLineLayer
+                    setPopupTitle={setPopupTitle}
                     hilltopURL="https://hilltopserver.horizons.govt.nz/data.hts"
                     measurement="Flow"
                     color={[45, 143, 255, 255]}
                     wkid={27200}
                 />
                 <HilltopSparkLineLayer
+                    setPopupTitle={setPopupTitle}
                     hilltopURL="http://hilltop.gw.govt.nz/Data.hts"
                     measurement="Flow"
                     color={[45, 143, 255, 255]}
