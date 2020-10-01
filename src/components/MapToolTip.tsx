@@ -31,25 +31,37 @@ const MapToolTip: React.FC<IMapToolTip> = ({ mapView, title }) => {
             {mousePosition && title && (
                 <div
                     style={{
-                        position: 'relative',
-                        height: 180,
-                        width: 300,
-                        left: `${mousePosition?.x + 5}px`,
-                        top: `${mousePosition?.y + 5}px`,
-                        background: 'rgb(235, 244, 255)',
+                        position: 'absolute',
+                        top: 0,
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
                         pointerEvents: 'none',
-                        boxShadow: '0px 0px 10px 2px rgba(0,0,0,0.3)',
+                        overflow: 'hidden'
                     }}
                 >
                     <div
                         style={{
-                            padding: '5px 15px',
-                            background: 'rgb(217, 234, 255)',
-                            color: 'rgb(0, 84, 181)',
-                            fontWeight: 'bold'
+                            position: 'relative',
+                            height: 180,
+                            width: 300,
+                            left: `${mousePosition?.x + 5}px`,
+                            top: `${mousePosition?.y + 5}px`,
+                            background: 'rgb(235, 244, 255)',
+                            pointerEvents: 'none',
+                            boxShadow: '0px 0px 10px 2px rgba(0,0,0,0.3)',
                         }}
                     >
-                        {title}
+                        <div
+                            style={{
+                                padding: '5px 15px',
+                                background: 'rgb(217, 234, 255)',
+                                color: 'rgb(0, 84, 181)',
+                                fontWeight: 'bold',
+                            }}
+                        >
+                            {title}
+                        </div>
                     </div>
                 </div>
             )}
