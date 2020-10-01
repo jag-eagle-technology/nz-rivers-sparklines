@@ -24,7 +24,7 @@ IgetHillTopMeasurements) => {
     // From=23/09/2020%2000:00:00
     // To=30/09/2020%2023:59:59
     const siteMeasurementsXML = await fetch(
-        `${hilltopURL}?Service=Hilltop&Request=GetData&Site=${site}&Measurement=${measurement}&TimeInterval=P7D/now`
+        `${hilltopURL}?Service=Hilltop&Request=GetData&Site=${site}&Measurement=${measurement}&TimeInterval=P7D/now`, {cache: 'no-store'}
     ).then((response) => response.text());
     const xmlParser = await new xml2js.Parser({ explicitArray: false });
     const siteMeasurements = await xmlParser.parseStringPromise(
@@ -33,6 +33,7 @@ IgetHillTopMeasurements) => {
     if (
         !siteMeasurements ||
         !siteMeasurements.Hilltop ||
+        !Array.isArray(siteMeasurements.Hilltop.Measurement.Data.E) ||
         (siteMeasurements.HilltopServer && siteMeasurements.HilltopServer.Error)
     ) {
         // console.log('bad: ');
@@ -40,6 +41,7 @@ IgetHillTopMeasurements) => {
         return;
     }
     // implement error catching here
+    // console.log(siteMeasurements);
     return siteMeasurements.Hilltop.Measurement.Data.E.map(
         (datum: { T: string; I1: string }) => [datum.T, +datum.I1]
     ) as [string, number][];
@@ -72,7 +74,7 @@ export const getHillTopSites = async ({
     measurement: string;
 }): Promise<ISparkLineData> => {
     const sitesXML = await fetch(
-        `${hilltopURL}?Service=Hilltop&Request=SiteList&Location=Yes&Measurement=${measurement}`
+        `${hilltopURL}?Service=Hilltop&Request=SiteList&Location=Yes&Measurement=${measurement}`, {cache: 'no-store'}
     ).then((response) => response.text());
     const xmlParser = await new xml2js.Parser({ explicitArray: false });
     const siteMeasurements = await xmlParser.parseStringPromise(sitesXML);
@@ -137,16 +139,19 @@ export const getHilltopDataForSitesWithDatatable = async ({
     const sites = await getHillTopSites({ hilltopURL, measurement });
     const chunk = (array: any[], size: number): any[] => {
         if (array.length <= size) {
-            return [array]
+            return [array];
         }
-        return [array.slice(0, size), ...chunk(array.slice(size), size)]
-    }
+        return [array.slice(0, size), ...chunk(array.slice(size), size)];
+    };
     const mapSiteNamesToObjectPropreties = (acc: any, result: any) => {
         return {
             ...acc,
-            [result.SiteName]: [...(acc[result.SiteName] || []), [result.Time, result.M1]],
+            [result.SiteName]: [
+                ...(acc[result.SiteName] || []),
+                [result.Time, result.M1],
+            ],
         };
-    }
+    };
     /*
     const resultPromises = siteChunks(sites, 10).map(async sites => {
         const sitesString = sites.reduce((prev: string, cur:any) => prev + `"${cur.properties.site}",`, '');
@@ -160,26 +165,32 @@ export const getHilltopDataForSitesWithDatatable = async ({
         );
     });
     */
-   const siteChunks = chunk(sites, 10);
+    const siteChunks = chunk(sites, 10);
     const resultPromises = await siteChunks.reduce(async (acc, sites) => {
-        const sitesString = sites.reduce((prev: string, cur:any) => prev + `"${cur.properties.site}",`, '');
+        const sitesString = sites.reduce(
+            (prev: string, cur: any) => prev + `"${cur.properties.site}",`,
+            ''
+        );
         const urlToFetch = `${hilltopURL}?Service=Hilltop&Request=DataTable&Measurement=${measurement}&TimeInterval=P7D/now&From=24/09/2020&To=01/10/2020&Site=${sitesString}`;
-        const siteMeasurementsXML = await fetch(
-            urlToFetch
-        ).then((response) => response.text());
+        const siteMeasurementsXML = await fetch(urlToFetch, {cache: 'no-store'}).then((response) =>
+            response.text()
+        );
         const xmlParser = await new xml2js.Parser({ explicitArray: false });
         const siteMeasurements: datatableResults = await xmlParser.parseStringPromise(
             siteMeasurementsXML
         );
         // console.log(siteMeasurements);
-        const chunkSiteObjects = siteMeasurements.HilltopServer.Results.reduce(mapSiteNamesToObjectPropreties, <{ [key: string]: any[] }>{});
+        const chunkSiteObjects = siteMeasurements.HilltopServer.Results.reduce(
+            mapSiteNamesToObjectPropreties,
+            <{ [key: string]: any[] }>{}
+        );
         // console.log(chunkSiteObjects);
         if (!siteMeasurements.HilltopServer.Results) {
             // console.log(siteMeasurements);
             // console.log(urlToFetch);
-            return {...acc};
+            return { ...acc };
         }
-        return {...acc, ...chunkSiteObjects};
+        return { ...acc, ...chunkSiteObjects };
     }, {});
     console.log(resultPromises);
 };

@@ -29,17 +29,20 @@ function App() {
 
 export default App;
 /*
+                <HilltopSparkLineLayer
+                    hilltopURL="https://corsflare.jag-eagle-technology.workers.dev/corsproxy/?apiurl=https://data.hbrc.govt.nz/Envirodata/EMAR.hts"
+                    measurement="Stage"
+                    color={[45, 143, 255, 255]}
+                    wkid={27200}
+                />
+
 
                 <HilltopSparkLineLayer
-                    hilltopURL="https://data.hbrc.govt.nz/Envirodata/EMAR.hts"
+                    hilltopURL="https://corsflare.jag-eagle-technology.workers.dev/corsproxy/?apiurl=http://hilltop.nrc.govt.nz/data.hts"
                     measurement="Flow"
                     color={[45, 143, 255, 255]}
                 />
-                <HilltopSparkLineLayer
-                    hilltopURL="http://hilltop.nrc.govt.nz/data.hts"
-                    measurement="Flow"
-                    color={[45, 143, 255, 255]}
-                />
+
 */
 /*
                 <HilltopSparkLineLayer
