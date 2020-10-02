@@ -1,12 +1,20 @@
 import React from 'react';
 import IMapView from 'esri/views/MapView';
+import ILayer from 'esri/layers/Layer';
+import IGraphic from 'esri/Graphic';
+
+export interface IMapToolTipLayer {
+    layer: ILayer;
+    title: (graphic: IGraphic) => string;
+    body: (graphic: IGraphic) => string;
+}
 
 interface IMapToolTip {
     mapView?: IMapView;
-    title?: string;
+    layers: IMapToolTipLayer[];
 }
 
-const MapToolTip: React.FC<IMapToolTip> = ({ mapView, title }) => {
+const MapToolTip: React.FC<IMapToolTip> = ({ mapView, layers }) => {
     // get mapview.container
     // get mouse position
     // set position of tooltip
@@ -14,18 +22,38 @@ const MapToolTip: React.FC<IMapToolTip> = ({ mapView, title }) => {
         x: number;
         y: number;
     }>();
-    const initTooltip = () => {
+    const [title, setTitle] = React.useState<string>();
+    /*
+    if (setPopupTitle) {
+        mapView.on('pointer-move', (evt) => 
+    }
+    */
+    const initListeners = () => {
         if (!mapView) {
             return;
         }
-        mapView.on('pointer-move', (evt) =>
-            setMousePosition({ x: evt.x, y: evt.y })
-        );
-        mapView.on('pointer-leave', (evt) => setMousePosition(undefined));
+        const pointerMoveListener = mapView.on('pointer-move', (evt) => {
+            setMousePosition({ x: evt.x, y: evt.y });
+            mapView
+                .hitTest(evt, {
+                    include: layers.map((i) => i.layer),
+                })
+                .then((value) => {
+                    if (value.results) {
+                        setTitle(value.results[0].graphic.attributes.site);
+                    } else {
+                        setTitle(undefined);
+                        setMousePosition(undefined);
+                    }
+                });
+        });
+        const pointerLeaveListener = mapView.on('pointer-leave', (evt) => setMousePosition(undefined));
+        return [pointerMoveListener, pointerLeaveListener];
     };
     React.useEffect(() => {
-        initTooltip();
-    }, [mapView]);
+        const listeners = initListeners();
+        return (() => listeners && listeners.forEach(listener => listener.remove()));
+    }, [mapView, layers]);
     return (
         <>
             {mousePosition && title && (
@@ -46,7 +74,7 @@ const MapToolTip: React.FC<IMapToolTip> = ({ mapView, title }) => {
                             padding: '5px 15px',
                             background: 'rgb(217, 234, 255)',
                             color: 'rgb(0, 84, 181)',
-                            fontWeight: 'bold'
+                            fontWeight: 'bold',
                         }}
                     >
                         {title}

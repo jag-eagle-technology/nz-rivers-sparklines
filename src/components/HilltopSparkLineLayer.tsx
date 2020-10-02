@@ -1,7 +1,11 @@
 import React, { useEffect } from 'react';
 import IMapView from 'esri/views/MapView';
 import SparkLineLayer, { ISparkLineData } from './SparkLineLayer';
-import { getHillTopSitesWithData, getHilltopDataForSitesWithDatatable } from '../api/HillTopAPI';
+import {
+    getHillTopSitesWithData,
+    getHilltopDataForSitesWithDatatable,
+} from '../api/HillTopAPI';
+import { IMapToolTipLayer } from './MapToolTip';
 
 interface IHilltopSparkLineLayer {
     mapView?: IMapView;
@@ -9,7 +13,7 @@ interface IHilltopSparkLineLayer {
     measurement: string;
     wkid?: number;
     color: number[];
-    setPopupTitle?: React.Dispatch<React.SetStateAction<string | undefined>>;
+    setToolTipLayer?: (layer: IMapToolTipLayer) => void;
 }
 
 const HilltopSparkLineLayer = ({
@@ -18,7 +22,7 @@ const HilltopSparkLineLayer = ({
     measurement,
     wkid = 2193,
     color,
-    setPopupTitle
+    setToolTipLayer
 }: IHilltopSparkLineLayer) => {
     const [sparkLineData, setSparkLineData] = React.useState<ISparkLineData>(
         []
@@ -40,10 +44,16 @@ const HilltopSparkLineLayer = ({
     };
     useEffect(() => {
         loadSparkLineData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     return (
-        <SparkLineLayer mapView={mapView} data={sparkLineData} color={color} id={`${hilltopURL} - ${measurement}`} setPopupTitle={setPopupTitle} />
+        <SparkLineLayer
+            mapView={mapView}
+            data={sparkLineData}
+            color={color}
+            id={`${hilltopURL} - ${measurement}`}
+            setToolTipLayer={setToolTipLayer}
+        />
     );
 };
 

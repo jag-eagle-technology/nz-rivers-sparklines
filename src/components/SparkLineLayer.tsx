@@ -6,6 +6,7 @@ import IPoint from 'esri/geometry/Point';
 import IGraphicsLayer from 'esri/layers/GraphicsLayer';
 import ISpatialReference from 'esri/geometry/SpatialReference';
 import { loadModules } from 'esri-loader';
+import { IMapToolTipLayer } from './MapToolTip';
 
 export interface ISparkLinePoint {
     coordinates: { x: number; y: number, wkid: number };
@@ -20,10 +21,10 @@ interface ISparkLineLayer {
     mapView?: IMapView;
     color: number[];
     id: string;
-    setPopupTitle?: React.Dispatch<React.SetStateAction<string | undefined>>;
+    setToolTipLayer?: (layer: IMapToolTipLayer) => void;
 }
 
-const SparkLineLayer: React.FC<ISparkLineLayer> = ({ mapView, data, color, id, setPopupTitle }) => {
+const SparkLineLayer: React.FC<ISparkLineLayer> = ({ mapView, data, color, id, setToolTipLayer }) => {
     const [trendLayer, setTrendLayer] = React.useState<IGraphicsLayer>();
     const initLayer = async () => {
         type Modules = [typeof IGraphicsLayer, typeof ISpatialReference];
@@ -42,9 +43,6 @@ const SparkLineLayer: React.FC<ISparkLineLayer> = ({ mapView, data, color, id, s
             });
             mapView.map.add(layer);
             setTrendLayer(layer);
-            if (setPopupTitle) {
-                mapView.on('pointer-move', (evt) => mapView.hitTest(evt, {include: layer}).then(value => value.results[0] && setPopupTitle(value.results[0].graphic.attributes.site)));
-            }
         } catch (err) {
             console.log(err);
         }

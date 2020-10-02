@@ -33,6 +33,9 @@ IgetHillTopMeasurements) => {
     if (
         !siteMeasurements ||
         !siteMeasurements.Hilltop ||
+        !siteMeasurements.Hilltop.Measurement ||
+        !siteMeasurements.Hilltop.Measurement.Data ||
+        !siteMeasurements.Hilltop.Measurement.Data.E ||
         (siteMeasurements.HilltopServer && siteMeasurements.HilltopServer.Error)
     ) {
         // console.log('bad: ');
