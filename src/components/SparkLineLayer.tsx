@@ -9,7 +9,7 @@ import { loadModules } from 'esri-loader';
 import { IMapToolTipLayer } from './MapToolTip';
 
 export interface ISparkLinePoint {
-    coordinates: { x: number; y: number, wkid: number };
+    coordinates: { x: number; y: number; wkid: number };
     properties: any;
     data: [string, number][];
 }
@@ -20,11 +20,22 @@ interface ISparkLineLayer {
     data: ISparkLineData;
     mapView?: IMapView;
     color: number[];
-    id: string;
-    setToolTipLayer?: (layer: IMapToolTipLayer) => void;
+    id?: string;
+    // fix this - should take properties
+    setToolTipLayer?: {
+        getTitle: (graphic: IGraphic, data?: any) => string;
+        getBody: (graphic: IGraphic, data?: any) => string;
+        setLayer: (layer: IMapToolTipLayer) => void;
+    };
 }
 
-const SparkLineLayer: React.FC<ISparkLineLayer> = ({ mapView, data, color, id, setToolTipLayer }) => {
+const SparkLineLayer: React.FC<ISparkLineLayer> = ({
+    mapView,
+    data,
+    color,
+    id,
+    setToolTipLayer,
+}) => {
     const [trendLayer, setTrendLayer] = React.useState<IGraphicsLayer>();
     const initLayer = async () => {
         type Modules = [typeof IGraphicsLayer, typeof ISpatialReference];
@@ -39,10 +50,17 @@ const SparkLineLayer: React.FC<ISparkLineLayer> = ({ mapView, data, color, id, s
 
             const layer = new GraphicsLayer({
                 visible: false,
-                id
             });
+            id && (layer.id = id);
             mapView.map.add(layer);
             setTrendLayer(layer);
+            if (setToolTipLayer) {
+                setToolTipLayer.setLayer({
+                    layer,
+                    title: setToolTipLayer.getTitle,
+                    body: setToolTipLayer.getBody,
+                });
+            }
         } catch (err) {
             console.log(err);
         }
@@ -92,7 +110,9 @@ const SparkLineLayer: React.FC<ISparkLineLayer> = ({ mapView, data, color, id, s
                 const geometry = new Point({
                     x: sparkLinePoint.coordinates.x,
                     y: sparkLinePoint.coordinates.y,
-                    spatialReference: new SpatialReference({ wkid: sparkLinePoint.coordinates.wkid }),
+                    spatialReference: new SpatialReference({
+                        wkid: sparkLinePoint.coordinates.wkid,
+                    }),
                 });
                 const symbol = new CIMSymbol({
                     data: {
@@ -124,7 +144,7 @@ const SparkLineLayer: React.FC<ISparkLineLayer> = ({ mapView, data, color, id, s
                                                     {
                                                         type: 'CIMSolidStroke',
                                                         width: 1.5,
-                                                        color
+                                                        color,
                                                     },
                                                 ],
                                             },
@@ -135,7 +155,11 @@ const SparkLineLayer: React.FC<ISparkLineLayer> = ({ mapView, data, color, id, s
                         },
                     },
                 });
-                return new Graphic({ geometry, symbol, attributes: {...sparkLinePoint.properties}});
+                return new Graphic({
+                    geometry,
+                    symbol,
+                    attributes: { ...sparkLinePoint.properties },
+                });
             });
             if (sparkLineGraphics.length > 0) {
                 trendLayer.visible = true;
@@ -149,14 +173,14 @@ const SparkLineLayer: React.FC<ISparkLineLayer> = ({ mapView, data, color, id, s
     };
     useEffect(() => {
         initLayer();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mapView]);
     useEffect(() => {
         if (trendLayer) {
             trendLayer.removeAll();
             drawLayer();
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [trendLayer, data]);
     return null;
 };

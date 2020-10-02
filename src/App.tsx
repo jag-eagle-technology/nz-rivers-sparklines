@@ -9,26 +9,32 @@ function App() {
     const [GWRCFlowLayer, setGWRCFlowLayer] = React.useState<
         IMapToolTipLayer
     >();
+    const [HorizonsFlowLayer, setHorizonsFlowLayer] = React.useState<
+        IMapToolTipLayer
+    >();
     return (
         <div className="App">
             <div style={{ display: 'flex', width: '100%', height: '100%' }}>
                 <div style={{ width: '400px' }}></div>
-                <div>
+                <div style={{ flexGrow: 1 }}>
                     <MapView webmapId="dccd38078e4a451c935ab3e1f2a6e4d4">
                         <MapToolTip
-                            layers={[...(GWRCFlowLayer ? [GWRCFlowLayer] : [])]}
+                            layers={[
+                                ...(GWRCFlowLayer ? [GWRCFlowLayer] : []),
+                                ...(HorizonsFlowLayer
+                                    ? [HorizonsFlowLayer]
+                                    : []),
+                            ]}
                         />
-                        {/*                         
                         <HilltopSparkLineLayer
-                            setPopupTitle={setPopupTitle}
+                            setToolTipLayer={setHorizonsFlowLayer}
                             hilltopURL="https://hilltopserver.horizons.govt.nz/data.hts"
                             measurement="Flow"
                             color={[45, 143, 255, 255]}
                             wkid={27200}
                         />
-                        */}
                         <HilltopSparkLineLayer
-                            hilltopURL="http://hilltop.gw.govt.nz/Data.hts"
+                            hilltopURL="https://corsflare.jag-eagle-technology.workers.dev/corsproxy/?apiurl=http://hilltop.gw.govt.nz/Data.hts"
                             measurement="Flow"
                             color={[45, 143, 255, 255]}
                             setToolTipLayer={setGWRCFlowLayer}
@@ -42,17 +48,20 @@ function App() {
 
 export default App;
 /*
+                <HilltopSparkLineLayer
+                    hilltopURL="https://corsflare.jag-eagle-technology.workers.dev/corsproxy/?apiurl=https://data.hbrc.govt.nz/Envirodata/EMAR.hts"
+                    measurement="Stage"
+                    color={[45, 143, 255, 255]}
+                    wkid={27200}
+                />
+
 
                 <HilltopSparkLineLayer
-                    hilltopURL="https://data.hbrc.govt.nz/Envirodata/EMAR.hts"
+                    hilltopURL="https://corsflare.jag-eagle-technology.workers.dev/corsproxy/?apiurl=http://hilltop.nrc.govt.nz/data.hts"
                     measurement="Flow"
                     color={[45, 143, 255, 255]}
                 />
-                <HilltopSparkLineLayer
-                    hilltopURL="http://hilltop.nrc.govt.nz/data.hts"
-                    measurement="Flow"
-                    color={[45, 143, 255, 255]}
-                />
+
 */
 /*
                 <HilltopSparkLineLayer

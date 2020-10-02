@@ -38,9 +38,9 @@ const MapView: React.FC<Props> = ({ webmapId, children }: Props) => {
                 zoom: undefined,
                 map: new WebMap({
                     portalItem: {
-                        id: webmapId
-                    }
-                })
+                        id: webmapId,
+                    },
+                }),
             });
             view.when(() => {
                 setMapView(view);
@@ -48,23 +48,21 @@ const MapView: React.FC<Props> = ({ webmapId, children }: Props) => {
         } catch (err) {
             console.log(err);
         }
-    }
+    };
 
     React.useEffect(() => {
         loadCss();
         initMapView();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (
-        <>
+        <div style={{height: '100%', width: '100%'}}>
             <div
                 style={{
-                    position: 'absolute',
-                    top: 0,
-                    bottom: 0,
+                    height: '100%',
                     width: '100%',
-                    height: '100%'
+                    position: 'absolute'
                 }}
                 ref={mapDivRef}
             ></div>
@@ -73,8 +71,8 @@ const MapView: React.FC<Props> = ({ webmapId, children }: Props) => {
                     mapView,
                 });
             })}
-        </>
-    )
-}
+        </div>
+    );
+};
 
 export default MapView;
