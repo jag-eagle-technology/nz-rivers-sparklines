@@ -2,34 +2,34 @@ import React from 'react';
 import IMapView from 'esri/views/MapView';
 import ILayer from 'esri/layers/Layer';
 import IGraphic from 'esri/Graphic';
-// __esri.MapViewClickEvent
 
 export interface IMapToolTipLayer {
     layer: ILayer;
-    title: (graphic: IGraphic) => string;
-    body: (graphic: IGraphic) => string;
+    getTitle: (graphic: IGraphic) => string;
+    getBody: (graphic: IGraphic) => string;
 }
 
 interface IMapToolTip {
     mapView?: IMapView;
     layers: IMapToolTipLayer[];
     onClick?: __esri.MapViewClickEventHandler;
+    setLayerId?: React.Dispatch<React.SetStateAction<string | undefined>>;
+    setFeatureId?: React.Dispatch<React.SetStateAction<string | undefined>>;
 }
 
-const MapToolTip: React.FC<IMapToolTip> = ({ mapView, layers, onClick }) => {
-    // get mapview.container
-    // get mouse position
-    // set position of tooltip
+const MapToolTip: React.FC<IMapToolTip> = ({
+    mapView,
+    layers,
+    onClick,
+    setLayerId,
+    setFeatureId,
+}) => {
     const [mousePosition, setMousePosition] = React.useState<{
         x: number;
         y: number;
     }>();
     const [title, setTitle] = React.useState<string>();
-    /*
-    if (setPopupTitle) {
-        mapView.on('pointer-move', (evt) => 
-    }
-    */
+    const [body, setBody] = React.useState<string>(); // update to include components
     const initListeners = () => {
         if (!mapView) {
             return;
@@ -43,21 +43,37 @@ const MapToolTip: React.FC<IMapToolTip> = ({ mapView, layers, onClick }) => {
                         include: layers.map((i) => i.layer),
                     })
                     .then((value) => {
-                        console.log(value);
                         if (value.results[0]) {
                             const tooltipLayer = layers.find(
                                 (tooltipLayer) =>
                                     tooltipLayer.layer.id ==
                                     value.results[0].graphic.layer.id
                             );
-                            console.log(tooltipLayer);
                             if (tooltipLayer) {
                                 setTitle(
-                                    tooltipLayer.title(value.results[0].graphic)
+                                    tooltipLayer.getTitle(
+                                        value.results[0].graphic
+                                    )
                                 );
+                                setBody(
+                                    tooltipLayer.getBody(
+                                        value.results[0].graphic
+                                    )
+                                );
+                                setFeatureId &&
+                                    setFeatureId(
+                                        value.results[0].graphic.attributes
+                                            .id || undefined
+                                    );
+                                setLayerId &&
+                                    setLayerId(
+                                        value.results[0].graphic.layer.id ||
+                                            undefined
+                                    );
                             }
                         } else {
                             setTitle(undefined);
+                            setBody(undefined);
                             setMousePosition(undefined);
                         }
                     });
@@ -81,15 +97,18 @@ const MapToolTip: React.FC<IMapToolTip> = ({ mapView, layers, onClick }) => {
             {mousePosition && title && (
                 <div
                     style={{
+                        top: 0,
+                        left: 0,
                         height: '100%',
                         width: '100%',
+                        position: 'absolute',
                         pointerEvents: 'none',
                         overflow: 'hidden',
                     }}
                 >
                     <div
                         style={{
-                            position: 'relative',
+                            position: 'absolute',
                             height: 180,
                             width: 300,
                             left: `${mousePosition?.x + 5}px`,
@@ -111,6 +130,7 @@ const MapToolTip: React.FC<IMapToolTip> = ({ mapView, layers, onClick }) => {
                         >
                             {title}
                         </div>
+                        {body}
                     </div>
                 </div>
             )}

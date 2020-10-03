@@ -57,7 +57,7 @@ const MapView: React.FC<Props> = ({ webmapId, children }: Props) => {
     }, []);
 
     return (
-        <div style={{height: '100%', width: '100%'}}>
+        <div style={{height: '100%', width: '100%', position: 'relative'}}>
             <div
                 style={{
                     height: '100%',

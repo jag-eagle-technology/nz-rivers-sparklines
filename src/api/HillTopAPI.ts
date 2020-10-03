@@ -52,7 +52,7 @@ export const getHillTopMeasurements = async ({
     site,
     measurement,
     range,
-    interval
+    interval = 'P7D/now'
 }: // from,
 // to,
 // interval = 'undefined',
@@ -63,7 +63,7 @@ IgetHillTopMeasurements) => {
     // To=30/09/2020%2023:59:59
     // const queryString = `${hilltopURL}`;
     const siteMeasurementsXML = await fetch(
-        `${hilltopURL}?Service=Hilltop&Request=GetData&Site=${site}&Measurement=${measurement}&TimeInterval=P7D/now`, {cache: 'no-store'}
+        `${hilltopURL}?Service=Hilltop&Request=GetData&Site=${site}&Measurement=${measurement}&TimeInterval=${interval}`, {cache: 'no-store'}
     ).then((response) => response.text());
     const xmlParser = await new xml2js.Parser({ explicitArray: false });
     const siteMeasurements = await xmlParser.parseStringPromise(

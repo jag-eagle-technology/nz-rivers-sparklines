@@ -57,8 +57,8 @@ const SparkLineLayer: React.FC<ISparkLineLayer> = ({
             if (setToolTipLayer) {
                 setToolTipLayer.setLayer({
                     layer,
-                    title: setToolTipLayer.getTitle,
-                    body: setToolTipLayer.getBody,
+                    getTitle: setToolTipLayer.getTitle,
+                    getBody: setToolTipLayer.getBody,
                 });
             }
         } catch (err) {

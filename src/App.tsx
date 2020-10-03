@@ -3,6 +3,7 @@ import MapView from './components/MapView';
 import HilltopSparkLineLayer from './components/HilltopSparkLineLayer';
 import MapToolTip from './components/MapToolTip';
 import { IMapToolTipLayer } from './components/MapToolTip';
+import LineGraph from './components/LineGraph/LineGraph';
 import './App.css';
 function App() {
     const [popupTitle, setPopupTitle] = React.useState<string>();
@@ -14,8 +15,7 @@ function App() {
     >();
     return (
         <div className="App">
-            <div style={{ display: 'flex', width: '100%', height: '100%' }}>
-                <div style={{ width: '400px' }}></div>
+            <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%' }}>
                 <div style={{ flexGrow: 1 }}>
                     <MapView webmapId="dccd38078e4a451c935ab3e1f2a6e4d4">
                         <MapToolTip
@@ -41,6 +41,7 @@ function App() {
                         />
                     </MapView>
                 </div>
+                <div style={{ height: '200px' }}><LineGraph></LineGraph></div>
             </div>
         </div>
     );
