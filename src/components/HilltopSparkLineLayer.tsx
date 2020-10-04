@@ -7,13 +7,15 @@ import {
 } from '../api/HillTopAPI';
 import { IMapToolTipLayer } from './MapToolTip';
 
-interface IHilltopSparkLineLayer {
+export interface IHilltopSparkLineLayer {
     mapView?: IMapView;
     hilltopURL: string;
     measurement: string;
     wkid?: number;
     color: number[];
     setToolTipLayer?: (layer: IMapToolTipLayer) => void;
+    // fixme 
+    setData?: React.Dispatch<React.SetStateAction<ISparkLineData | undefined>>;
 }
 
 const HilltopSparkLineLayer = ({
@@ -22,11 +24,15 @@ const HilltopSparkLineLayer = ({
     measurement,
     wkid = 2193,
     color,
-    setToolTipLayer
+    setToolTipLayer,
+    setData
 }: IHilltopSparkLineLayer) => {
     const [sparkLineData, setSparkLineData] = React.useState<ISparkLineData>(
         []
     );
+    useEffect(() => {
+        setData && setData(sparkLineData);
+    }, [setData, sparkLineData]);
     const loadSparkLineData = async () => {
         var hillTopMeasurements = await getHillTopSitesWithData({
             hilltopURL,

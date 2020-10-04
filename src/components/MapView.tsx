@@ -15,9 +15,10 @@ export type MapCenterLocation = {
 interface Props {
     webmapId: string;
     children?: React.ReactNode;
+    onClick?: (event: __esri.MapViewClickEvent, view: IMapView) => void;
 }
 
-const MapView: React.FC<Props> = ({ webmapId, children }: Props) => {
+const MapView: React.FC<Props> = ({ webmapId, children, onClick }: Props) => {
     const mapDivRef = React.useRef<HTMLDivElement>(null);
     const [mapView, setMapView] = React.useState<IMapView>();
 
@@ -31,6 +32,10 @@ const MapView: React.FC<Props> = ({ webmapId, children }: Props) => {
             ]) as Promise<Modules>);
             if (!mapDivRef.current) {
                 throw new Error('map div is not defined');
+            }
+            if (mapView) {
+                mapView.destroy();
+                setMapView(undefined);
             }
             const view = new MapView({
                 container: mapDivRef.current,
@@ -54,15 +59,22 @@ const MapView: React.FC<Props> = ({ webmapId, children }: Props) => {
         loadCss();
         initMapView();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [webmapId]);
+
+    React.useEffect(() => {
+        if (mapView && onClick) {
+            const clickHandler = mapView.on('click', (evt) => onClick(evt, mapView));
+            return () => clickHandler.remove();
+        }
+    }, [mapView, onClick]);
 
     return (
-        <div style={{height: '100%', width: '100%', position: 'relative'}}>
+        <div style={{ height: '100%', width: '100%', position: 'relative' }}>
             <div
                 style={{
                     height: '100%',
                     width: '100%',
-                    position: 'absolute'
+                    position: 'absolute',
                 }}
                 ref={mapDivRef}
             ></div>
