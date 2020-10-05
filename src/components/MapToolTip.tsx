@@ -3,10 +3,14 @@ import IMapView from 'esri/views/MapView';
 import ILayer from 'esri/layers/Layer';
 import IGraphic from 'esri/Graphic';
 
-export interface IMapToolTipLayer {
-    layer: ILayer;
+export interface getToolTipInfo {
     getTitle: (graphic: IGraphic) => string;
     getBody: (graphic: IGraphic) => string;
+}
+
+export interface IMapToolTipLayer {
+    layer: ILayer;
+    getInfo: getToolTipInfo;
 }
 
 interface IMapToolTip {
@@ -51,12 +55,12 @@ const MapToolTip: React.FC<IMapToolTip> = ({
                             );
                             if (tooltipLayer) {
                                 setTitle(
-                                    tooltipLayer.getTitle(
+                                    tooltipLayer.getInfo.getTitle(
                                         value.results[0].graphic
                                     )
                                 );
                                 setBody(
-                                    tooltipLayer.getBody(
+                                    tooltipLayer.getInfo.getBody(
                                         value.results[0].graphic
                                     )
                                 );
@@ -113,7 +117,7 @@ const MapToolTip: React.FC<IMapToolTip> = ({
                             width: 300,
                             left: `${mousePosition?.x + 5}px`,
                             top: `${mousePosition?.y + 5}px`,
-                            background: 'rgb(235, 244, 255)',
+                            background: '#3a4042',
                             pointerEvents: 'none',
                             boxShadow: '0px 0px 10px 2px rgba(0,0,0,0.3)',
                             borderRadius: '3px',
@@ -123,14 +127,16 @@ const MapToolTip: React.FC<IMapToolTip> = ({
                         <div
                             style={{
                                 padding: '5px 15px',
-                                background: 'rgb(217, 234, 255)',
-                                color: 'rgb(0, 84, 181)',
+                                background: '#363b3d',
+                                color: 'white',
                                 fontWeight: 'bold',
                             }}
                         >
                             {title}
                         </div>
-                        {body}
+                        <div style={{ padding: '5px 15px', color: 'white' }}>
+                            {body}
+                        </div>
                     </div>
                 </div>
             )}

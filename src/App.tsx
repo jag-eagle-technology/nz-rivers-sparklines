@@ -1,21 +1,38 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import IMapView from 'esri/views/MapView';
 import MapView from './components/MapView';
+import IGraphicsLayer from 'esri/layers/GraphicsLayer';
 import HilltopSparkLineLayer from './components/HilltopSparkLineLayer';
 import MapToolTip from './components/MapToolTip';
-import { IMapToolTipLayer } from './components/MapToolTip';
+import { getToolTipInfo } from './components/MapToolTip';
 import { ISparkLineData } from './components/SparkLineLayer';
 import NivoLineGraph from './components/LineGraph/NivoLineGraph';
 import './App.css';
 function App() {
-    const [selectedSite, setSelectedSite] = React.useState<string>();
+    const [selectedSite, setSelectedSite] = React.useState<{
+        id: string;
+        layerId: string;
+    }>();
     // fixme - type of any
-    const getSiteData = (site: string, data: ISparkLineData): any => {
+    const getSiteData = (selectedSite: {
+        id: string;
+        layerId: string;
+    }): any => {
+        var data;
+        if (selectedSite.layerId == GWRCFlowLayer?.id) {
+            data = GWRCFlowLayerData;
+        }
+        if (selectedSite.layerId == HorizonsFlowLayer?.id) {
+            data = HorizonsFlowData;
+        }
+        if (!data) {
+            return;
+        }
         return [
             {
-                id: selectedSite,
+                id: selectedSite.id,
                 data: data
-                    .find((value) => value.properties.site === selectedSite)
+                    .find((value) => value.properties.id === selectedSite.id)
                     ?.data.map((datum) => ({
                         x: datum[0],
                         y: datum[1],
@@ -23,23 +40,36 @@ function App() {
             },
         ];
     };
-    useEffect(() => {
-        GWRCFlowLayerData &&
-            selectedSite &&
-            console.log(getSiteData(selectedSite, GWRCFlowLayerData));
-    }, [selectedSite]);
-    const [GWRCFlowLayer, setGWRCFlowLayer] = React.useState<
-        IMapToolTipLayer
-    >();
-    const [GWRCFlowLayerData, setGWRCFlowLayerData] = React.useState<
+
+    const [GWRCFlowLayer, setGWRCFlowLayer] = React.useState<IGraphicsLayer>();
+    const [GWRCFlowLayerData, setGWRCFlowData] = React.useState<
         ISparkLineData
     >();
-    const [HorizonsFlowLayer, setHorizonsFlowLayer] = React.useState<
-        IMapToolTipLayer
+    const [GetGWRCToolTipDetails, setGetGWRCToolTipDetails] = React.useState<
+        getToolTipInfo
     >();
+    const [HorizonsFlowLayer, setHorizonsFlowLayer] = React.useState<
+        IGraphicsLayer
+    >();
+    const [HorizonsFlowData, setHorizonsFlowData] = React.useState<
+        ISparkLineData
+    >();
+    const [
+        GetHorizonsToolTipDetails,
+        setGetHorizonsToolTipDetails,
+    ] = React.useState<getToolTipInfo>();
     const tempGetArrayMapLayers = () => [
-        ...(GWRCFlowLayer ? [GWRCFlowLayer] : []),
-        ...(HorizonsFlowLayer ? [HorizonsFlowLayer] : []),
+        ...(GWRCFlowLayer && GetGWRCToolTipDetails
+            ? [{ layer: GWRCFlowLayer, getInfo: GetGWRCToolTipDetails }]
+            : []),
+        ...(HorizonsFlowLayer && GetHorizonsToolTipDetails
+            ? [
+                  {
+                      layer: HorizonsFlowLayer,
+                      getInfo: GetHorizonsToolTipDetails,
+                  },
+              ]
+            : []),
     ];
     const handleMapClick = (
         event: __esri.MapViewClickEvent,
@@ -51,11 +81,18 @@ function App() {
         view.hitTest(event.screenPoint, {
             include: tempGetArrayMapLayers().map(({ layer }) => layer),
         }).then((features) => {
-            // fixme - hardcoded id right now
+            console.log(features.results);
             features.results[0] &&
-                setSelectedSite(features.results[0].graphic.attributes.site);
+                setSelectedSite({
+                    id: features.results[0].graphic.attributes.id,
+                    layerId: features.results[0].graphic.layer.id,
+                });
         });
     };
+    React.useEffect(() => {
+        console.log(selectedSite);
+        selectedSite && console.log(getSiteData(selectedSite));
+    });
     return (
         <div className="App">
             <div
@@ -64,35 +101,64 @@ function App() {
                     flexDirection: 'column',
                     width: '100%',
                     height: '100%',
+                    background: '#1d2224',
                 }}
             >
-                <div style={{ flexGrow: 1 }}>
+                <div style={{ flexGrow: 1, position: 'relative' }}>
                     <MapView
                         webmapId="dccd38078e4a451c935ab3e1f2a6e4d4"
                         onClick={handleMapClick}
                     >
                         <MapToolTip layers={tempGetArrayMapLayers()} />
                         <HilltopSparkLineLayer
-                            setToolTipLayer={setHorizonsFlowLayer}
                             hilltopURL="https://hilltopserver.horizons.govt.nz/data.hts"
                             measurement="Flow"
                             color={[45, 143, 255, 255]}
                             wkid={27200}
+                            setLayer={setHorizonsFlowLayer}
+                            setData={setHorizonsFlowData}
+                            setGetToolTipDetails={setGetHorizonsToolTipDetails}
                         />
                         <HilltopSparkLineLayer
                             hilltopURL="https://corsflare.jag-eagle-technology.workers.dev/corsproxy/?apiurl=http://hilltop.gw.govt.nz/Data.hts"
                             measurement="Flow"
                             color={[45, 143, 255, 255]}
-                            setToolTipLayer={setGWRCFlowLayer}
-                            setData={setGWRCFlowLayerData}
+                            setLayer={setGWRCFlowLayer}
+                            setData={setGWRCFlowData}
+                            setGetToolTipDetails={setGetGWRCToolTipDetails}
                         />
                     </MapView>
-                </div>
-                <div style={{ height: '200px' }}>
-                    {GWRCFlowLayerData && selectedSite && (
-                        <NivoLineGraph
-                            data={getSiteData(selectedSite, GWRCFlowLayerData)}
-                        ></NivoLineGraph>
+                    {selectedSite && getSiteData(selectedSite) && (
+                        <div
+                            style={{
+                                position: 'absolute',
+                                bottom: 25,
+                                left: 25,
+                                right: 25,
+                                height: 200,
+                                background: '#3a4042',
+                                borderRadius: 5,
+                                boxShadow: '0px 0px 10px 2px rgba(0,0,0,0.3)',
+                            }}
+                        >
+                            <div
+                                style={{
+                                    textAlign: 'center',
+                                    fontWeight: 'bold',
+                                    color: 'white',
+                                    fontSize: '24px',
+                                    height: '50px',
+                                    lineHeight: '50px'
+                                }}
+                            >
+                                {selectedSite.id}
+                            </div>
+                            <div style={{ height: '150px' }}>
+                                <NivoLineGraph
+                                    data={getSiteData(selectedSite)}
+                                ></NivoLineGraph>
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>

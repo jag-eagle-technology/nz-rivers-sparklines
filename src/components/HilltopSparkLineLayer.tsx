@@ -1,11 +1,10 @@
 import React, { useEffect } from 'react';
 import IMapView from 'esri/views/MapView';
 import IGraphic from 'esri/Graphic';
+import IGraphicsLayer from 'esri/layers/GraphicsLayer';
 import SparkLineLayer, { ISparkLineData } from './SparkLineLayer';
-import {
-    getHillTopSitesWithData,
-} from '../api/HillTopAPI';
-import { IMapToolTipLayer } from './MapToolTip';
+import { getHillTopSitesWithData } from '../api/HillTopAPI';
+import { getToolTipInfo } from '../components/MapToolTip';
 
 export interface IHilltopSparkLineLayer {
     mapView?: IMapView;
@@ -13,9 +12,12 @@ export interface IHilltopSparkLineLayer {
     measurement: string;
     wkid?: number;
     color: number[];
-    setToolTipLayer?: (layer: IMapToolTipLayer) => void;
-    // fixme 
+    // fixme
+    setLayer?: React.Dispatch<React.SetStateAction<IGraphicsLayer | undefined>>;
     setData?: React.Dispatch<React.SetStateAction<ISparkLineData | undefined>>;
+    setGetToolTipDetails?: React.Dispatch<
+        React.SetStateAction<getToolTipInfo | undefined>
+    >;
 }
 
 const HilltopSparkLineLayer = ({
@@ -24,12 +26,14 @@ const HilltopSparkLineLayer = ({
     measurement,
     wkid = 2193,
     color,
-    setToolTipLayer,
-    setData
+    setLayer,
+    setData,
+    setGetToolTipDetails,
 }: IHilltopSparkLineLayer) => {
     const [sparkLineData, setSparkLineData] = React.useState<ISparkLineData>(
         []
     );
+    const [hilltopLayer, setHilltopLayer] = React.useState<IGraphicsLayer>();
     useEffect(() => {
         setData && setData(sparkLineData);
     }, [setData, sparkLineData]);
@@ -47,7 +51,11 @@ const HilltopSparkLineLayer = ({
                 (measurement) => measurement.data.length > 0
             )
         );
+        setGetToolTipDetails && setGetToolTipDetails({ getTitle, getBody });
+        // setLayer && setLayer(hilltopLayer);
+        // console.log(hilltopLayer);
     };
+    useEffect(() => setLayer && setLayer(hilltopLayer));
     useEffect(() => {
         loadSparkLineData();
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -59,7 +67,7 @@ const HilltopSparkLineLayer = ({
             mapView={mapView}
             data={sparkLineData}
             color={color}
-            setToolTipLayer={ setToolTipLayer && {setLayer: setToolTipLayer, getTitle, getBody}}
+            setLayer={setHilltopLayer}
         />
     );
 };

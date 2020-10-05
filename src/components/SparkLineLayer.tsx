@@ -6,11 +6,10 @@ import IPoint from 'esri/geometry/Point';
 import IGraphicsLayer from 'esri/layers/GraphicsLayer';
 import ISpatialReference from 'esri/geometry/SpatialReference';
 import { loadModules } from 'esri-loader';
-import { IMapToolTipLayer } from './MapToolTip';
 
 export interface ISparkLinePoint {
     coordinates: { x: number; y: number; wkid: number };
-    properties: any;
+    properties: { id: string; layerId: string } & any;
     data: [string, number][];
 }
 
@@ -21,12 +20,8 @@ interface ISparkLineLayer {
     mapView?: IMapView;
     color: number[];
     id?: string;
-    // fix this - should take properties
-    setToolTipLayer?: {
-        getTitle: (graphic: IGraphic, data?: any) => string;
-        getBody: (graphic: IGraphic, data?: any) => string;
-        setLayer: (layer: IMapToolTipLayer) => void;
-    };
+    setId?: React.Dispatch<React.SetStateAction<string | undefined>>;
+    setLayer?: React.Dispatch<React.SetStateAction<IGraphicsLayer | undefined>>;
 }
 
 const SparkLineLayer: React.FC<ISparkLineLayer> = ({
@@ -34,7 +29,8 @@ const SparkLineLayer: React.FC<ISparkLineLayer> = ({
     data,
     color,
     id,
-    setToolTipLayer,
+    setId,
+    setLayer,
 }) => {
     const [trendLayer, setTrendLayer] = React.useState<IGraphicsLayer>();
     const initLayer = async () => {
@@ -52,15 +48,10 @@ const SparkLineLayer: React.FC<ISparkLineLayer> = ({
                 visible: false,
             });
             id && (layer.id = id);
+            setId && setId(layer.id);
             mapView.map.add(layer);
             setTrendLayer(layer);
-            if (setToolTipLayer) {
-                setToolTipLayer.setLayer({
-                    layer,
-                    getTitle: setToolTipLayer.getTitle,
-                    getBody: setToolTipLayer.getBody,
-                });
-            }
+            setLayer && setLayer(layer);
         } catch (err) {
             console.log(err);
         }
@@ -90,8 +81,9 @@ const SparkLineLayer: React.FC<ISparkLineLayer> = ({
                 'esri/geometry/Point',
                 'esri/geometry/SpatialReference',
             ]) as Promise<Modules>);
-            console.dir(data);
-            const sparkLineGraphics = data.map((sparkLinePoint) => {
+            // sparkline graphics assume even distribution of data points
+            // and that ymin = 0
+            const sparkLineGraphics = data.flatMap((sparkLinePoint) => {
                 const ymax = sparkLinePoint.data
                     .map((i) => i[1])
                     .reduce(
@@ -107,6 +99,12 @@ const SparkLineLayer: React.FC<ISparkLineLayer> = ({
                         const y = num;
                         return [x, y];
                     });
+                if (ratio <= 0) {
+                    // console.log(sparkLinePoint);
+                    // console.log(path);
+                    // console.log(`ymax: ${ymax} ratio: ${ratio}`);
+                    return [];
+                }
                 const geometry = new Point({
                     x: sparkLinePoint.coordinates.x,
                     y: sparkLinePoint.coordinates.y,
@@ -155,11 +153,13 @@ const SparkLineLayer: React.FC<ISparkLineLayer> = ({
                         },
                     },
                 });
-                return new Graphic({
-                    geometry,
-                    symbol,
-                    attributes: { ...sparkLinePoint.properties },
-                });
+                return [
+                    new Graphic({
+                        geometry,
+                        symbol,
+                        attributes: { ...sparkLinePoint.properties },
+                    }),
+                ];
             });
             if (sparkLineGraphics.length > 0) {
                 trendLayer.visible = true;

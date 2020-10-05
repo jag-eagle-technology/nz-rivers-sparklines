@@ -9,20 +9,16 @@ export interface IhilltopGetDataQuery {
     range?: {
         from: string;
         to: string;
-    }
+    };
 }
 
-export interface IhilltopGetDataQueryResults {
-    
-}
+export interface IhilltopGetDataQueryResults {}
 
 // ${hilltopURL}?Service=Hilltop&Request=SiteList&Location=Yes&Measurement=${measurement}
 export interface IhilltopSiteListQuery {
     location: 'Yes' | 'LatLng';
     measurement: boolean;
 }
-
-
 
 export interface IhilltopQuery {
     hilltopURL: string;
@@ -32,19 +28,20 @@ export interface IhilltopQuery {
 
 export interface IhilltopQueryError {
     HilltopServer: {
-        Error: any
-    }
+        Error: any;
+    };
 }
 
 // *** current api *** //
 export interface IgetHillTopMeasurements {
+    id: string;
     hilltopURL: string;
     site: string;
     measurement: string;
     range?: {
         from: string;
         to: string;
-    }
+    };
     interval?: string;
 }
 export const getHillTopMeasurements = async ({
@@ -52,7 +49,7 @@ export const getHillTopMeasurements = async ({
     site,
     measurement,
     range,
-    interval = 'P7D/now'
+    interval = 'P2D/now',
 }: // from,
 // to,
 // interval = 'undefined',
@@ -63,7 +60,8 @@ IgetHillTopMeasurements) => {
     // To=30/09/2020%2023:59:59
     // const queryString = `${hilltopURL}`;
     const siteMeasurementsXML = await fetch(
-        `${hilltopURL}?Service=Hilltop&Request=GetData&Site=${site}&Measurement=${measurement}&TimeInterval=${interval}`, {cache: 'no-store'}
+        `${hilltopURL}?Service=Hilltop&Request=GetData&Site=${site}&Measurement=${measurement}&TimeInterval=${interval}`,
+        { cache: 'no-store' }
     ).then((response) => response.text());
     const xmlParser = await new xml2js.Parser({ explicitArray: false });
     const siteMeasurements = await xmlParser.parseStringPromise(
@@ -98,6 +96,7 @@ export const getHilltopDataForSites = async ({
     const sitePromises = sites.map(async (site) => {
         const siteMeasurements = await getHillTopMeasurements({
             hilltopURL,
+            id: site.properties.site,
             site: site.properties.site,
             measurement: site.properties.measurement,
         });
@@ -115,7 +114,8 @@ export const getHillTopSites = async ({
     measurement: string;
 }): Promise<ISparkLineData> => {
     const sitesXML = await fetch(
-        `${hilltopURL}?Service=Hilltop&Request=SiteList&Location=Yes&Measurement=${measurement}`, {cache: 'no-store'}
+        `${hilltopURL}?Service=Hilltop&Request=SiteList&Location=Yes&Measurement=${measurement}`,
+        { cache: 'no-store' }
     ).then((response) => response.text());
     const xmlParser = await new xml2js.Parser({ explicitArray: false });
     const siteMeasurements = await xmlParser.parseStringPromise(sitesXML);
@@ -124,15 +124,13 @@ export const getHillTopSites = async ({
         !siteMeasurements.HilltopServer ||
         !!siteMeasurements.HilltopServer.Error
     ) {
-        // console.log('bad: ');
-        // console.log(siteMeasurements);
         return [];
     }
     // implement error catching here
     return siteMeasurements.HilltopServer.Site.map(
         (site: { $: { Name: string }; Easting: string; Northing: string }) => ({
             coordinates: { x: +site.Easting, y: +site.Northing },
-            properties: { site: site.$.Name, measurement },
+            properties: { id: site.$.Name, site: site.$.Name, measurement },
             data: [],
         })
     );
@@ -213,9 +211,9 @@ export const getHilltopDataForSitesWithDatatable = async ({
             ''
         );
         const urlToFetch = `${hilltopURL}?Service=Hilltop&Request=DataTable&Measurement=${measurement}&TimeInterval=P7D/now&From=24/09/2020&To=01/10/2020&Site=${sitesString}`;
-        const siteMeasurementsXML = await fetch(urlToFetch, {cache: 'no-store'}).then((response) =>
-            response.text()
-        );
+        const siteMeasurementsXML = await fetch(urlToFetch, {
+            cache: 'no-store',
+        }).then((response) => response.text());
         const xmlParser = await new xml2js.Parser({ explicitArray: false });
         const siteMeasurements: datatableResults = await xmlParser.parseStringPromise(
             siteMeasurementsXML
