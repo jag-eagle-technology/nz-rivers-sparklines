@@ -120,7 +120,7 @@ function App() {
                             setGetToolTipDetails={setGetHorizonsToolTipDetails}
                         />
                         <HilltopSparkLineLayer
-                            hilltopURL="https://corsflare.jag-eagle-technology.workers.dev/corsproxy/?apiurl=http://hilltop.gw.govt.nz/Data.hts"
+                            hilltopURL="https://corsflare.jag-eagle-technology.workers.dev/?http://hilltop.gw.govt.nz/Data.hts"
                             measurement="Flow"
                             color={[45, 143, 255, 255]}
                             setLayer={setGWRCFlowLayer}
